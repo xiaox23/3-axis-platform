@@ -1,0 +1,152 @@
+import serial
+import time
+
+# 配置串口
+ser = serial.Serial(
+    port='COM4',
+    baudrate=115200,
+    bytesize=serial.EIGHTBITS,
+    parity=serial.PARITY_NONE,
+    stopbits=serial.STOPBITS_ONE,
+    timeout=1
+)
+# 检查 is_open 属性
+if ser.is_open:
+    print("串口打开成功")
+else:
+    print("串口打开失败")
+
+# 十六进制字符串转换为有符号十进制数
+def f_hexToSignedInt(hexStr, numBits=32):
+    # 将十六进制数转换为无符号整数
+    unsignedInt = int(hexStr, 16)
+    # 检查最高位
+    if (unsignedInt >> (numBits - 1)) & 1:
+        # 如果最高位是 1，执行二进制补码转换
+        signedInt = unsignedInt - (1 << numBits)
+    else:
+        # 如果最高位是 0，则无需转换
+        signedInt = unsignedInt
+    # 返回int类型的有符号十进制数
+    return signedInt
+
+# 轴回零函数
+def axis_homing(axis):
+    #print(f"{axis}轴回零中")
+    if axis == 'X':
+        command = 'CJXZx'
+        query_command = 'CJXBX'
+    elif axis == 'Y':
+        command = 'CJXZY'
+        query_command = 'CJXBY'
+    elif axis == 'Z':
+        command = 'CJXZz'
+        query_command = 'CJXBZ'
+
+        #CJXCGX-100F15000$
+
+    # 发送回零指令
+    ser.write(command.encode())
+    print(command.encode())
+    time.sleep(0.1)
+
+    last_time = time.time()
+    zero_count = 0
+    while True:
+        # 发送查询指令
+        ser.write(query_command.encode())
+        #time.sleep(0.01)
+        data = ser.read(4)
+        #print(data.hex())
+        if len(data) == 4:
+            position = int.from_bytes(data, byteorder='little')  # 假设小端模式
+            if position == 0:
+                zero_count += 1
+                if zero_count >= 5:  # 连续5次（每秒10次采样）为0
+                    print(f"{axis}轴回零成功")
+                    break
+            else:
+                zero_count = 0
+        time.sleep(0.1)
+
+# 增量运动函数
+def incremental_movement(axis, target_position, speed):
+    if axis == 'X':
+        command = f'CJXCGX{target_position}F{speed}$'
+        query_command = 'CJXBX'
+    elif axis == 'Y':
+        command = f'CJXCGY{target_position}F{speed}$'
+        query_command = 'CJXBY'
+    elif axis == 'Z':
+        command = f'CJXCGZ{target_position}F{speed}$'
+        query_command = 'CJXBZ'
+    
+    # 先查询一次
+    ser.write(query_command.encode())
+    data = ser.read(4)
+    if len(data) == 4:
+        position_last = f_hexToSignedInt(data.hex())
+
+    # 发送增量运动指令
+    ser.write(command.encode())
+    time.sleep(0.1)
+    #print(command.encode())
+
+    while True:
+        # 发送查询指令
+        ser.write(query_command.encode())
+        data = ser.read(4)
+       # print(data.hex())
+        if len(data) == 4:
+            position = f_hexToSignedInt(data.hex())
+            if (position-position_last) == target_position*1000:
+                print(f"{axis}轴运动到目标位置 {target_position}")
+                break
+        time.sleep(0.1)
+
+# 增量运动循环
+speed = 15000  # 速度值，可根据实际情况调整
+
+################################################归零##############################################
+# #先稍向中心位置运动一端距离
+incremental_movement('X', -10, speed)
+incremental_movement('Y',  10, speed)
+incremental_movement('Z', -10, speed)
+
+# # # 轴回零操作
+axis_homing('X')
+axis_homing('Y')
+axis_homing('Z')
+################################################归零##############################################
+
+################################################使用##############################################
+# #先稍向中心位置运动一端距离
+# incremental_movement('X', -20, speed)
+# incremental_movement('Y',  20, speed)
+# incremental_movement('Z', -20, speed)
+
+# # 增量运动
+# incremental_movement('X', -5, speed)
+# incremental_movement('X',  5, speed)
+# incremental_movement('X', -5, speed)
+# incremental_movement('X',  5, speed)
+# incremental_movement('X', -5, speed)
+# incremental_movement('X',  5, speed)
+
+# incremental_movement('Y', -5, speed)
+# incremental_movement('Y',  5, speed)
+# incremental_movement('Y', -5, speed)
+# incremental_movement('Y',  5, speed)
+# incremental_movement('Y', -5, speed)
+# incremental_movement('Y',  5, speed)
+
+# incremental_movement('Z', -5, speed)
+# incremental_movement('Z',  5, speed)
+# incremental_movement('Z', -5, speed)
+# incremental_movement('Z',  5, speed)
+# incremental_movement('Z', -5, speed)
+# incremental_movement('Z',  5, speed)
+################################################使用##############################################
+
+# 关闭串口
+ser.close()
