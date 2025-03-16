@@ -42,8 +42,9 @@ def axis_homing(axis):
     elif axis == 'Z':
         command = 'CJXZz'        # Z 轴正向回机械零
         query_command = 'CJXBZ'  # 查询 Z 轴信息 ( 四字节 , 高位在前 , 低位在后 )
-
-        #CJXCGX-100F15000$
+    elif axis == 'C':
+        command = 'CJXZc'        # C 轴正向回机械零
+        query_command = 'CJXBC'  # 查询 C 轴信息 ( 四字节 , 高位在前 , 低位在后 )
 
     # 发送回零指令
     ser.write(command.encode())
@@ -62,7 +63,7 @@ def axis_homing(axis):
             position = int.from_bytes(data, byteorder='little')  # 假设小端模式
             if position == 0:
                 zero_count += 1
-                if zero_count >= 5:  # 连续5次（每秒10次采样）为0
+                if (zero_count >= 10):  # 连续5次（每秒10次采样）为0
                     print(f"{axis}轴回零成功")
                     break
             else:
@@ -80,6 +81,9 @@ def incremental_movement(axis, target_position, speed):
     elif axis == 'Z':
         command = f'CJXCGZ{target_position}F{speed}$'
         query_command = 'CJXBZ'
+    elif axis == 'C':
+        command = f'CJXCGC{target_position}F{speed}$'
+        query_command = 'CJXBC'
     
     # 先查询一次
     ser.write(query_command.encode())
@@ -108,15 +112,18 @@ def incremental_movement(axis, target_position, speed):
 speed = 15000  # 速度值，可根据实际情况调整
 
 ################################################归零##############################################
-# #先稍向中心位置运动一端距离
+# # #先稍向中心位置运动一端距离
 incremental_movement('X', -10, speed)
 incremental_movement('Y',  10, speed)
 incremental_movement('Z', -10, speed)
+incremental_movement('C', -1, 0.01*speed)
 
-# # # 轴回零操作
+# # # # # 轴回零操作
 axis_homing('X')
 axis_homing('Y')
 axis_homing('Z')
+axis_homing('C')
+incremental_movement('C', -2.4, 0.01*speed)
 ################################################归零##############################################
 
 ################################################使用##############################################
@@ -146,6 +153,13 @@ axis_homing('Z')
 # incremental_movement('Z',  5, speed)
 # incremental_movement('Z', -5, speed)
 # incremental_movement('Z',  5, speed)
+
+# incremental_movement('C', -0.4, 0.01*speed)
+# incremental_movement('C',  0.4, 0.01*speed)
+# incremental_movement('C', -0.4, 0.01*speed)
+# incremental_movement('C',  0.4, 0.01*speed)
+# incremental_movement('C', -0.4, 0.01*speed)
+# incremental_movement('C',  0.4, 0.01*speed)
 ################################################使用##############################################
 
 # 关闭串口
