@@ -19,9 +19,9 @@ class Config:
     TABLE_GAP = 25
 
     # MEASURE
-    BASE_Z_POS = -30.0  # mm, 测量得到，gelsight的表面刚好与在存放区的50mm高的轴相碰
-    CUBIOD_GARAGE_POS_X = -73.5
-    ORIGIN_POS_Y = 169.8
+    BASE_Z_POS = -249.4  # mm, 测量得到，gelsight的表面刚好与在存放区的50mm高的轴相碰
+    CUBIOD_GARAGE_POS_X = -104.6
+    ORIGIN_POS_Y = 160.4
     CUBIOD_GARAGE_POS_THETA = -15
 
 
