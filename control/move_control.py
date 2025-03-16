@@ -1,9 +1,9 @@
 import serial
 import time
 
-# 配置串口
+# 配置串口, 115200, 8, n, 1
 ser = serial.Serial(
-    port='COM4',
+    port= '/dev/ttyUSB0',
     baudrate=115200,
     bytesize=serial.EIGHTBITS,
     parity=serial.PARITY_NONE,
@@ -34,14 +34,14 @@ def f_hexToSignedInt(hexStr, numBits=32):
 def axis_homing(axis):
     #print(f"{axis}轴回零中")
     if axis == 'X':
-        command = 'CJXZx'
-        query_command = 'CJXBX'
-    elif axis == 'Y':
-        command = 'CJXZY'
-        query_command = 'CJXBY'
+        command = 'CJXZx'        # X 轴正向回机械零
+        query_command = 'CJXBX'  # 查询 X 轴信息 ( 四字节 , 高位在前 , 低位在后 )
+    elif axis == 'Y': 
+        command = 'CJXZY'        # Y 轴正向回机械零
+        query_command = 'CJXBY'  # 查询 Y 轴信息 ( 四字节 , 高位在前 , 低位在后 )
     elif axis == 'Z':
-        command = 'CJXZz'
-        query_command = 'CJXBZ'
+        command = 'CJXZz'        # Z 轴正向回机械零
+        query_command = 'CJXBZ'  # 查询 Z 轴信息 ( 四字节 , 高位在前 , 低位在后 )
 
         #CJXCGX-100F15000$
 
@@ -72,8 +72,8 @@ def axis_homing(axis):
 # 增量运动函数
 def incremental_movement(axis, target_position, speed):
     if axis == 'X':
-        command = f'CJXCGX{target_position}F{speed}$'
-        query_command = 'CJXBX'
+        command = f'CJXCGX{target_position}F{speed}$' # CJXCG 增量运动，X/Y/Z:需要哪个轴运动， F后为速度
+        query_command = 'CJXBX'                       # 查询轴信息
     elif axis == 'Y':
         command = f'CJXCGY{target_position}F{speed}$'
         query_command = 'CJXBY'
