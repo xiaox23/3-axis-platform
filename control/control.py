@@ -2,7 +2,7 @@ import serial
 import time
 
 class MoveControl:
-    """运动控制类，用于操作XYZ轴的回零、信息获取和增量运动"""
+    """运动控制类, 用于操作XYZC轴的回零、信息获取和增量运动"""
     
     def __init__(self, port='/dev/ttyUSB0', baudrate=115200, timeout=1):
         """
@@ -41,8 +41,8 @@ class MoveControl:
 
     def axis_homing(self, axis):
         """
-        将指定的XYZ轴回零
-        :param axis: 轴名称 (X, Y, Z)
+        将指定的XYZC轴回零
+        :param axis: 轴名称 (X, Y, Z, C)
         """
         # 根据轴的类型生成回零指令和查询指令
         if axis == 'X':
@@ -54,9 +54,9 @@ class MoveControl:
         elif axis == 'Z':
             command = 'CJXZz'
             query_command = 'CJXBZ'
-        else:
-            print("无效的轴名称")
-            return
+        elif axis == 'C':
+            command = 'CJXZc'        # C 轴正向回机械零
+            query_command = 'CJXBC'
 
         # 发送回零指令
         self.ser.write(command.encode())
@@ -90,9 +90,8 @@ class MoveControl:
             query_command = 'CJXBY'
         elif axis == 'Z':
             query_command = 'CJXBZ'
-        else:
-            print("无效的轴名称")
-            return None
+        elif axis == 'C':
+            query_command = 'CJXBC'
 
         # 发送查询指令
         self.ser.write(query_command.encode())
@@ -108,7 +107,7 @@ class MoveControl:
     def incremental_movement(self, axis, target_position, speed):
         """
         控制指定轴以增量方式运动
-        :param axis: 轴名称 (X, Y, Z)
+        :param axis: 轴名称 (X, Y, Z, C)
         :param target_position: 目标位置（相对当前的位置偏移量）
         :param speed: 运动速度
         """
@@ -121,9 +120,9 @@ class MoveControl:
         elif axis == 'Z':
             command = f'CJXCGZ{target_position}F{speed}$'
             query_command = 'CJXBZ'
-        else:
-            print("无效的轴名称")
-            return
+        elif axis == 'C':
+            command = f'CJXCGC{target_position}F{speed}$'
+            query_command = 'CJXBC'
 
         # 查询当前轴的位置
         self.ser.write(query_command.encode())
@@ -164,11 +163,12 @@ if __name__ == "__main__":
     # controller.axis_homing('X')
     # controller.axis_homing('Y')
     # controller.axis_homing('Z')
+    controller.axis_homing('C')
 
     # 获取轴位置信息
-    controller.get_axis_position('X')
-    controller.get_axis_position('Y')
-    controller.get_axis_position('Z')
+    # controller.get_axis_position('X')
+    # controller.get_axis_position('Y')
+    # controller.get_axis_position('Z')
 
     # 增量运动示例
     speed = 15000  # 设置运动速度
@@ -179,8 +179,10 @@ if __name__ == "__main__":
     
     # controller.incremental_movement('X', -20, speed) 
     # controller.incremental_movement('Y',  20, speed)
-    controller.incremental_movement('Z', -20, speed)
+    # controller.incremental_movement('Z', -20, speed)
 
+    controller.incremental_movement('C', -2.4, 0.01*speed)
+    time.sleep(1)
 
     # 关闭串口连接
     controller.close()

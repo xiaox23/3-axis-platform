@@ -1,6 +1,6 @@
 import control 
 
-""" get the information about the X/Y/Z axis """
+""" get the information about the X/Y/Z/C axis """
 
 if __name__ == '__main__':
     # 初始化运动控制实例
@@ -11,7 +11,7 @@ if __name__ == '__main__':
     controller.get_axis_position('X')
     controller.get_axis_position('Y')
     controller.get_axis_position('Z')
-    
+    controller.get_axis_position('C')
     
     # 关闭串口连接
     controller.close()

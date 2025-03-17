@@ -1,6 +1,6 @@
 import control
 
-""" calibrate X/Y/Z axis to inital position """
+""" calibrate X/Y/Z/C axis to inital position """
 
 if __name__ == "__main__":
      # 初始化运动控制实例
@@ -14,6 +14,8 @@ if __name__ == "__main__":
     controller.incremental_movement('Y',  160.4, speed)  # y左移
     
     controller.incremental_movement('Z', -104.6, speed)    # z向上移动
+
+    controller.incremental_movement('C', -2.4, 0.01*speed) # c轴逆时针旋转
 
     # 关闭串口连接
     controller.close()

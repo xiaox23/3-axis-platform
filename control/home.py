@@ -1,6 +1,6 @@
 import control
 
-""" reset the X/Y/Z axis to home state"""
+""" reset the X/Y/Z/C axis to home state"""
 
 if __name__ == "__main__":
     # 初始化运动控制实例
@@ -16,6 +16,7 @@ if __name__ == "__main__":
     controller.axis_homing('X')
     controller.axis_homing('Y')
     controller.axis_homing('Z')
+    controller.axis_homing('C')
     
     # 关闭串口连接
     controller.close()

@@ -113,16 +113,16 @@ speed = 15000  # 速度值，可根据实际情况调整
 
 ################################################归零##############################################
 # # #先稍向中心位置运动一端距离
-incremental_movement('X', -10, speed)
-incremental_movement('Y',  10, speed)
-incremental_movement('Z', -10, speed)
+# incremental_movement('X', -10, speed)
+# incremental_movement('Y',  10, speed)
+# incremental_movement('Z', -10, speed)
 incremental_movement('C', -1, 0.01*speed)
 
 # # # # # 轴回零操作
-axis_homing('X')
-axis_homing('Y')
-axis_homing('Z')
-axis_homing('C')
+# axis_homing('X')
+# axis_homing('Y')
+# axis_homing('Z')
+# axis_homing('C')
 incremental_movement('C', -2.4, 0.01*speed)
 ################################################归零##############################################
 

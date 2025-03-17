@@ -28,7 +28,7 @@ then run `sensor_node.py`
 gelsihtmini还是会松动 导致kill
 
 # Ours
-## 1. get the position information about the X/Y/Z axis
+## 1. get the position information about the X/Y/Z/C axis
 ```
 python control/get_info.py
 ```
@@ -36,10 +36,15 @@ python control/get_info.py
 ```
 python control/home.py
 ```
-## 3. control X/Y/Z axis to the incremental position with specific speed
+## 3. control X/Y/Z/C axis to the calibrate position
+```
+python control/calibrate.py
+```
+## 4. control X/Y/Z/C axis to the incremental position with specific speed
 ```
 python control/move.py
 ```
+
 
 
 
