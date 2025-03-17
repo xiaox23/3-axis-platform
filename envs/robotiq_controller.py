@@ -263,7 +263,7 @@ class RobotiqGripper:
 
 
 if __name__ == "__main__":
-    gripper = RobotiqGripper('/dev/hande')
+    gripper = RobotiqGripper('/dev/ttyUSB1')
     # gripper.reset()
     gripper.close()
     #time.sleep(1)
