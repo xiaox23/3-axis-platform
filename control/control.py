@@ -1,5 +1,7 @@
 import serial
 import time
+import copy
+import numpy as np
 
 class MoveControl:
     """运动控制类, 用于操作XYZC轴的回零、信息获取和增量运动"""
@@ -104,7 +106,51 @@ class MoveControl:
             print(f"未能获取{axis}轴的位置")
             return None
 
-    def incremental_movement(self, axis, target_position, speed):
+    def absoulte_movement(self, axis, target_position, speed, wait=False):
+        """
+        控制指定轴以绝对方式运动
+        :param axis: 轴名称 (X, Y, Z, C)
+        :param target_position: 目标位置（绝对位置）
+        :param speed: 运动速度
+        """
+        if axis == 'X':
+            command = f'CJXCgX{target_position}F{speed}$'
+            query_command = 'CJXBX'
+        elif axis == 'Y':
+            command = f'CJXCgY{target_position}F{speed}$'
+            query_command = 'CJXBY'
+        elif axis == 'Z':
+            command = f'CJXCgZ{target_position}F{speed}$'
+            query_command = 'CJXBZ'
+        elif axis == 'C':
+            command = f'CJXCgC{target_position}F{speed}$'
+            query_command = 'CJXBC'
+
+        # 查询当前轴的位置
+        self.ser.write(query_command.encode())
+        data = self.ser.read(4)
+        if len(data) == 4:
+            position_last = self.f_hexToSignedInt(data.hex())
+        else:
+            print(f"无法获取{axis}轴的当前位置")
+            return
+
+        # 发送增量运动指令
+        self.ser.write(command.encode())
+        print(f"发送绝对运动指令: {command}")
+        time.sleep(0.1)
+        while True:
+            self.ser.write(query_command.encode())
+            data = self.ser.read(4)
+            if len(data) == 4:
+                position = self.f_hexToSignedInt(data.hex())
+                if position == target_position * 1000:
+                    print(f"{axis}轴运动到绝对目标位置 {target_position}")
+                    break
+            time.sleep(0.1)
+
+
+    def incremental_movement(self, axis, target_position, speed, wait):
         """
         控制指定轴以增量方式运动
         :param axis: 轴名称 (X, Y, Z, C)
@@ -146,6 +192,40 @@ class MoveControl:
                 if (position - position_last) == target_position * 1000:
                     print(f"{axis}轴运动到目标位置 {target_position}")
                     break
+            time.sleep(0.1)
+
+    def get_all_velocities(self):
+        X = self.get_axis_position('X')
+        Y = self.get_axis_position('Y')
+        Z = self.get_axis_position('Z')
+        C = self.get_axis_position('C')
+        position = [X, Y, Z, C]
+        print("position: ", position)
+        last_position = copy.deepcopy(position)
+        last_time = time.time()
+        time.sleep(0.1)
+        X = self.get_axis_position('X')
+        Y = self.get_axis_position('Y')
+        Z = self.get_axis_position('Z')
+        C = self.get_axis_position('C')
+        position = [X, Y, Z, C]
+        cur_position = copy.deepcopy(position)
+        cur_time = time.time()
+        velocity = (np.array(cur_position) - np.array(last_position)) / (cur_time - last_time)
+        self.velocity = velocity.tolist()
+        # print("velocity: ", self.velocity[0])
+        return self.velocity
+    
+    def is_moving(self):
+        vel = self.get_all_velocities()
+        # print("vel: ", vel)
+        if abs(vel[0]) < 1e-3 and abs(vel[1]) < 1e-3 and abs(vel[2]) < 1e-3:
+            return False
+        else:
+            return True
+
+    def wait_for_move_stop(self):
+        while self.is_moving():
             time.sleep(0.1)
 
     def close(self):

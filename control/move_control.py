@@ -37,7 +37,7 @@ def axis_homing(axis):
         command = 'CJXZx'        # X 轴正向回机械零
         query_command = 'CJXBX'  # 查询 X 轴信息 ( 四字节 , 高位在前 , 低位在后 )
     elif axis == 'Y': 
-        command = 'CJXZY'        # Y 轴正向回机械零
+        command = 'CJXZy'        # Y 轴正向回机械零
         query_command = 'CJXBY'  # 查询 Y 轴信息 ( 四字节 , 高位在前 , 低位在后 )
     elif axis == 'Z':
         command = 'CJXZz'        # Z 轴正向回机械零
@@ -114,16 +114,16 @@ speed = 15000  # 速度值，可根据实际情况调整
 ################################################归零##############################################
 # # #先稍向中心位置运动一端距离
 # incremental_movement('X', -10, speed)
-# incremental_movement('Y',  10, speed)
+# incremental_movement('Y',  5, speed)
 # incremental_movement('Z', -10, speed)
-incremental_movement('C', -1, 0.01*speed)
+# incremental_movement('C', -1, 0.01*speed)
 
 # # # # # 轴回零操作
 # axis_homing('X')
 # axis_homing('Y')
 # axis_homing('Z')
 # axis_homing('C')
-incremental_movement('C', -2.4, 0.01*speed)
+# incremental_movement('C', -2.4, 0.01*speed)
 ################################################归零##############################################
 
 ################################################使用##############################################

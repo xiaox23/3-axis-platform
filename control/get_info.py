@@ -12,6 +12,12 @@ if __name__ == '__main__':
     controller.get_axis_position('Y')
     controller.get_axis_position('Z')
     controller.get_axis_position('C')
+
+    # 获取轴速度信息
+    # v = controller.get_all_velocities()
+    # print("v: ", v)
+    # result = controller.is_moving()
+    # print("result:", result)
     
     # 关闭串口连接
     controller.close()
